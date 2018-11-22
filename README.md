@@ -1,2 +1,2 @@
-# pruning-pytorch
+# compression-pytorch
 
