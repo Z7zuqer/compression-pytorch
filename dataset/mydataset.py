@@ -10,14 +10,19 @@ valDir="/share4/public/classification_data/imagenet1k/val/"
 trainDir="/share4/public/classification_data/imagenet1k/train/"
 
 def PILLoad(imgPath,resizeH,resizeW,transform,phase):
-    with Image.open(valDir+imgPath) as img:
+    path=""
+    if phase=="train":
+        path=trainDir+imgPath
+    else:   
+        path=valDir+imgPath
+    with Image.open(path) as img:
         image = img.convert('RGB')
     image = transform(image)
     return image
 
 class MyValDataset(Dataset):
-    def __init__(self,txt,transform,shuffle):
-        fh=open(txt,"r")
+    def __init__(self,shuffle):
+        fh=open("/share4/public/classification_data/imagenet1k/meta/val.txt","r")
         imgs=[]
         self.transform=transforms.Compose([
                     transforms.Resize(256),
@@ -26,7 +31,7 @@ class MyValDataset(Dataset):
                     normalize,])
         self.shuffle=shuffle
         for line in fh:
-            line=line=strip('\n')
+            line=line.strip('\n')
             line=line.rstrip()
             words=line.split()
             labelList=int(words[1])
@@ -35,14 +40,14 @@ class MyValDataset(Dataset):
         self.imgs=imgs
     def __getitem__(self,item):
         image,label=self.imgs[item]
-        img=PILLoad(image,224,224,self.transform)
-        return img.label
+        img=PILLoad(image,224,224,self.transform,"test")
+        return img,label
     def __len__(self):
         return len(self.imgs)
 
 class MyTrainDataset(Dataset):
-    def __init__(self,txt,transform,shuffle):
-        fh=open(txt,"r")
+    def __init__(self,shuffle):
+        fh=open("/share4/public/classification_data/imagenet1k/meta/train.txt","r")
         imgs=[]
         self.transform=transforms.Compose([
                     transforms.Resize(256),
@@ -51,7 +56,7 @@ class MyTrainDataset(Dataset):
                     normalize,])
         self.shuffle=shuffle
         for line in fh:
-            line=line=strip('\n')
+            line=line.strip('\n')
             line=line.rstrip()
             words=line.split()
             labelList=int(words[1])
@@ -60,8 +65,7 @@ class MyTrainDataset(Dataset):
         self.imgs=imgs
     def __getitem__(self,item):
         image,label=self.imgs[item]
-        img=PILLoad(image,224,224,self.transform)
-        return img.label
+        img=PILLoad(image,224,224,self.transform,"train")
+        return img,label
     def __len__(self):
         return len(self.imgs)
- 
